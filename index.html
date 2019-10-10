@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Adyen Instalments Configuration Generator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="mx-auto container border m-2 p-2 bg-light fixed-top">
+    <div class="mt-2 mb-2">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <button type="button" class="btn btn-primary" id="outputPrepend" onclick="copyText()">Copy</button>
+            </div>
+            <input type="text" class="form-control" id="outputString" aria-describedby="outputPrepend"
+                   oninput="handleOutputChange(this.value)">
+            <div class="invalid-feedback">
+                Please provide a valid value.
+            </div>
+        </div>
+        <small id="outputHelp" class="form-text text-muted">Copy this text into the instalments field</small>
+    </div>
+</div>
+<div role="alert" aria-live="assertive" aria-atomic="true" class="toast" id="toaster" data-autohide="true"
+     style="position: absolute; top: 15px; right: 45%; z-index: 999999">
+    <div class="toast-body">
+        Copied to clipboard!
+    </div>
+</div>
+<div id="rules-wrapper" style="margin-top: 115px;">
+    <div id="rules" class="overflow-auto mx-auto container border m-2 p-2" style="max-height: calc(100vh - 190px)">
+        <h2>Rules</h2>
+        <div class="accordion" id="accordionExample"></div>
+    </div>
+</div>
+<div class="mx-auto container border m-2 p-2 fixed-bottom">
+    <button type="button" class="btn btn-primary" id="addRule">Add Rule</button>
+</div>
+<script>
+    let rulesCount = 0;
+    let result = {};
+    const creditCards = ["American Express", "Visa", "MasterCard", "Discover"]
+    const outputField = document.getElementById("outputString");
+
+    function copyText() {
+        $('#toaster').toast('show')
+
+        const input = document.getElementById("outputString")
+        input.select();
+        document.execCommand('copy')
+    }
+
+    function handleOnChange(field, id, value) {
+        outputField.classList.toggle("is-invalid", false)
+        outputField.classList.toggle("is-valid", true)
+        if (field === 'numberOfInstalments') document.getElementById(`instalmentsVal${id}`).innerText = value
+        result[id][field] = value;
+        const code = btoa(JSON.stringify(result, null, 2))
+        document.getElementById("outputString").value = code;
+    }
+
+    function removeRule(id) {
+        document.getElementById(`rule${id}`).remove();
+        result.slice(id, id)
+    }
+
+    function handleOutputChange(value) {
+        try {
+            const json = JSON.parse(atob(value));
+            rulesCount = 0;
+            result = json;
+            document.getElementById("accordionExample").innerHTML = ""
+            Object.keys(result).forEach(addRule)
+            outputField.classList.toggle("is-invalid", false)
+            outputField.classList.toggle("is-valid", true)
+        } catch (e) {
+            outputField.classList.toggle("is-invalid", true)
+            outputField.classList.toggle("is-valid", false)
+        }
+    }
+
+    function addRule() {
+        rulesCount++;
+        const hasRules = rulesCount in result;
+        if (!hasRules) {
+            result[rulesCount] = {amountRange: "", numberOfInstalments: 1, allowedCreditCards: []}
+        }
+        const el = document.createElement('div')
+        el.setAttribute("class", "card")
+        el.innerHTML = `
+            <div class="card-header" id="headingOne">
+                <h2 class="mb-0">
+                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse${rulesCount}" aria-expanded="true" aria-controls="collapse${rulesCount}">
+                        Rule #${rulesCount}
+                    </button>
+                </h2>
+            </div>
+
+            <div id="collapse${rulesCount}" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+                <div class="card-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="amountRange${rulesCount}">Amount Range</label>
+                            <input type="number" class="form-control" id="amountRange${rulesCount}" aria-describedby="amountRange" placeholder="Enter Amount" oninput="handleOnChange('amountRange', ${rulesCount}, this.value)" value="${result[rulesCount].amountRange}">
+                            <small id="amountHelp" class="form-text text-muted">The number of instalments you define in the next field will be applied if amount is within this range</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="numberOfInstalments${rulesCount}">Number of Installments: <span  id="instalmentsVal${rulesCount}">${result[rulesCount].numberOfInstalments}</span></label>
+                            <input type="range" class="custom-range" min="1" max="72" id="numberOfInstalments${rulesCount}" step="1" value="1" onchange="handleOnChange('numberOfInstalments', ${rulesCount}, this.value)" value="${result[rulesCount].numberOfInstalments}">
+                        </div>
+                        <div class="form-group">
+                            <label for="allowedCreditCards${rulesCount}">Allowed Credit Card Types</label>
+                            <select multiple class="form-control" id="allowedCreditCards${rulesCount}" onchange="handleOnChange('allowedCreditCards', ${rulesCount}, Array.from(this.selectedOptions).map(option => option.value))">
+                                ${creditCards.map(creditCard => {
+            if (result[rulesCount].allowedCreditCards.includes(creditCard)) return `<option selected>${creditCard}</option>`
+            return `<option>${creditCard}</option>`
+        })}
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="deleteRule${rulesCount}" onclick="removeRule(${rulesCount})">Delete Rule</button>
+                    </form>
+                </div>
+            </div>
+        `
+        document.getElementById("accordionExample").appendChild(el)
+    }
+
+    document.getElementById("addRule").addEventListener('click', addRule)
+</script>
+</body>
+</html>
