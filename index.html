@@ -49,7 +49,15 @@
 <script>
     let rulesCount = 0;
     let result = {};
-    const creditCards = ["American Express", "Visa", "MasterCard", "Discover"]
+    const creditCards = [
+        { name: "American Express", id: 'amex' },
+        { name: "Diners", id: "diners" },
+        { name: "Discover", id: "discover" },
+        { name: "Laser", id: "laser" },
+        { name: "Maestro", id: "maestro" },
+        { name: "MasterCard", id: "mc" },
+        { name: "Visa", id: 'visa' },
+    ]
     const outputField = document.getElementById("outputString");
 
     function copyText() {
@@ -116,15 +124,15 @@
                         </div>
                         <div class="form-group">
                             <label for="numberOfInstalments${rulesCount}">Number of Installments: <span  id="instalmentsVal${rulesCount}">${result[rulesCount].numberOfInstalments}</span></label>
-                            <input type="range" class="custom-range" min="1" max="72" id="numberOfInstalments${rulesCount}" step="1" value="1" onchange="handleOnChange('numberOfInstalments', ${rulesCount}, this.value)" value="${result[rulesCount].numberOfInstalments}">
+                            <input type="range" class="custom-range" min="1" max="72" id="numberOfInstalments${rulesCount}" step="1" onchange="handleOnChange('numberOfInstalments', ${rulesCount}, this.value)" value="${result[rulesCount].numberOfInstalments}">
                         </div>
                         <div class="form-group">
                             <label for="allowedCreditCards${rulesCount}">Allowed Credit Card Types</label>
                             <select multiple class="form-control" id="allowedCreditCards${rulesCount}" onchange="handleOnChange('allowedCreditCards', ${rulesCount}, Array.from(this.selectedOptions).map(option => option.value))">
-                                ${creditCards.map(creditCard => {
-            if (result[rulesCount].allowedCreditCards.includes(creditCard)) return `<option selected>${creditCard}</option>`
-            return `<option>${creditCard}</option>`
-        })}
+                                ${creditCards.map(({ id, name }) => {
+                                    if (result[rulesCount].allowedCreditCards.includes(id)) return `<option selected value="${id}">${name}</option>`
+                                    return `<option value="${id}">${name}</option>`
+                                })}
                             </select>
                         </div>
                         <button type="button" class="btn btn-primary" id="deleteRule${rulesCount}" onclick="removeRule(${rulesCount})">Delete Rule</button>
