@@ -40,7 +40,7 @@
 <div id="rules-wrapper" style="margin-top: 115px;">
     <div id="rules" class="overflow-auto mx-auto container border m-2 p-2" style="max-height: calc(100vh - 190px)">
         <h2>Rules</h2>
-        <div class="accordion" id="accordionExample"></div>
+        <div class="row" id="rulesRow"></div>
     </div>
 </div>
 <div class="mx-auto container border m-2 p-2 fixed-bottom">
@@ -85,10 +85,15 @@
         updateHash()
     }
 
+    function duplicateRule(id) {
+        result[rulesCount + 1] = { ...result[id] }
+        updateHash()
+        addRule()
+    }
+
     function removeRule(id) {
         document.getElementById(`rule${id}`).remove();
         delete result[id]
-        rulesCount--;
         updateHash()
     }
 
@@ -97,7 +102,7 @@
             const json = JSON.parse(atob(value));
             rulesCount = 0;
             result = json;
-            document.getElementById("accordionExample").innerHTML = ""
+            document.getElementById("rulesRow").innerHTML = ""
             Object.keys(result).forEach(addRule)
             toggleOutput(true)
         } catch (e) {
@@ -113,23 +118,14 @@
         }
         const el = document.createElement('div')
         el.setAttribute("id", `rule${rulesCount}`)
-        el.setAttribute("class", "card")
+        el.setAttribute("class", "col-3 mb-2")
         el.innerHTML = `
-            <div class="card-header" id="headingOne">
-                <h2 class="mb-0">
-                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse${rulesCount}" aria-expanded="true" aria-controls="collapse${rulesCount}">
-                        Rule #${rulesCount}
-                    </button>
-                </h2>
-            </div>
-
-            <div id="collapse${rulesCount}" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+            <div class="card" aria-labelledby="headingOne">
                 <div class="card-body">
                     <form>
                         <div class="form-group">
                             <label for="amountRange${rulesCount}">Amount Range</label>
                             <input type="number" class="form-control" id="amountRange${rulesCount}" aria-describedby="amountRange" placeholder="Enter Amount" oninput="handleOnChange('amountRange', ${rulesCount}, this.value)" value="${result[rulesCount].amountRange}">
-                            <small id="amountHelp" class="form-text text-muted">The number of installments you define in the next field will be applied if amount is within this range</small>
                         </div>
                         <div class="form-group">
                             <label for="numberOfInstallments${rulesCount}">Number of Installments: <span  id="installmentsVal${rulesCount}">${result[rulesCount].numberOfInstallments}</span></label>
@@ -144,12 +140,14 @@
                                 })}
                             </select>
                         </div>
-                        <button type="button" class="btn btn-primary" id="deleteRule${rulesCount}" onclick="removeRule(${rulesCount})">Delete Rule</button>
+                        <button type="button" class="btn btn-light btn-block" id="duplicateRule${rulesCount}" onclick="duplicateRule(${rulesCount})">Duplicate Rule</button>
+                        <button type="button" class="btn btn-outline-danger btn-block" id="deleteRule${rulesCount}" onclick="removeRule(${rulesCount})">Delete Rule</button>
                     </form>
                 </div>
             </div>
         `
-        document.getElementById("accordionExample").appendChild(el)
+        document.getElementById("rulesRow").appendChild(el)
+
     }
 
     document.getElementById("addRule").addEventListener('click', addRule)
