@@ -68,18 +68,28 @@
         document.execCommand('copy')
     }
 
-    function handleOnChange(field, id, value) {
-        outputField.classList.toggle("is-invalid", false)
-        outputField.classList.toggle("is-valid", true)
-        if (field === 'numberOfInstalments') document.getElementById(`instalmentsVal${id}`).innerText = value
-        result[id][field] = value;
+    function toggleOutput(isValid) {
+        outputField.classList.toggle("is-invalid", !isValid)
+        outputField.classList.toggle("is-valid", isValid)
+    }
+
+    function updateHash() {
         const code = btoa(JSON.stringify(result, null, 2))
         document.getElementById("outputString").value = code;
     }
 
+    function handleOnChange(field, id, value) {
+        toggleOutput(true)
+        if (field === 'numberOfInstalments') document.getElementById(`instalmentsVal${id}`).innerText = value
+        result[id][field] = value;
+        updateHash()
+    }
+
     function removeRule(id) {
         document.getElementById(`rule${id}`).remove();
-        result.slice(id, id)
+        delete result[id]
+        rulesCount--;
+        updateHash()
     }
 
     function handleOutputChange(value) {
@@ -89,11 +99,9 @@
             result = json;
             document.getElementById("accordionExample").innerHTML = ""
             Object.keys(result).forEach(addRule)
-            outputField.classList.toggle("is-invalid", false)
-            outputField.classList.toggle("is-valid", true)
+            toggleOutput(true)
         } catch (e) {
-            outputField.classList.toggle("is-invalid", true)
-            outputField.classList.toggle("is-valid", false)
+            toggleOutput(false)
         }
     }
 
@@ -104,6 +112,7 @@
             result[rulesCount] = {amountRange: "", numberOfInstalments: 1, allowedCreditCards: []}
         }
         const el = document.createElement('div')
+        el.setAttribute("id", `rule${rulesCount}`)
         el.setAttribute("class", "card")
         el.innerHTML = `
             <div class="card-header" id="headingOne">
