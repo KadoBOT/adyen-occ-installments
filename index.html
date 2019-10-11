@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Adyen Instalments Configuration Generator</title>
+    <title>Adyen Installments Configuration Generator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -28,7 +28,7 @@
                 Please provide a valid value.
             </div>
         </div>
-        <small id="outputHelp" class="form-text text-muted">Copy this text into the instalments field</small>
+        <small id="outputHelp" class="form-text text-muted">Copy this text into the installments field</small>
     </div>
 </div>
 <div role="alert" aria-live="assertive" aria-atomic="true" class="toast" id="toaster" data-autohide="true"
@@ -80,7 +80,7 @@
 
     function handleOnChange(field, id, value) {
         toggleOutput(true)
-        if (field === 'numberOfInstalments') document.getElementById(`instalmentsVal${id}`).innerText = value
+        if (field === 'numberOfInstallments') document.getElementById(`installmentsVal${id}`).innerText = value
         result[id][field] = value;
         updateHash()
     }
@@ -109,7 +109,7 @@
         rulesCount++;
         const hasRules = rulesCount in result;
         if (!hasRules) {
-            result[rulesCount] = {amountRange: "", numberOfInstalments: 1, allowedCreditCards: []}
+            result[rulesCount] = {amountRange: "", numberOfInstallments: 1, allowedCreditCards: []}
         }
         const el = document.createElement('div')
         el.setAttribute("id", `rule${rulesCount}`)
@@ -129,11 +129,11 @@
                         <div class="form-group">
                             <label for="amountRange${rulesCount}">Amount Range</label>
                             <input type="number" class="form-control" id="amountRange${rulesCount}" aria-describedby="amountRange" placeholder="Enter Amount" oninput="handleOnChange('amountRange', ${rulesCount}, this.value)" value="${result[rulesCount].amountRange}">
-                            <small id="amountHelp" class="form-text text-muted">The number of instalments you define in the next field will be applied if amount is within this range</small>
+                            <small id="amountHelp" class="form-text text-muted">The number of installments you define in the next field will be applied if amount is within this range</small>
                         </div>
                         <div class="form-group">
-                            <label for="numberOfInstalments${rulesCount}">Number of Installments: <span  id="instalmentsVal${rulesCount}">${result[rulesCount].numberOfInstalments}</span></label>
-                            <input type="range" class="custom-range" min="1" max="72" id="numberOfInstalments${rulesCount}" step="1" onchange="handleOnChange('numberOfInstalments', ${rulesCount}, this.value)" value="${result[rulesCount].numberOfInstalments}">
+                            <label for="numberOfInstallments${rulesCount}">Number of Installments: <span  id="installmentsVal${rulesCount}">${result[rulesCount].numberOfInstallments}</span></label>
+                            <input type="range" class="custom-range" min="1" max="72" id="numberOfInstlalments${rulesCount}" step="1" onchange="handleOnChange('numberOfInstallments', ${rulesCount}, this.value)" value="${result[rulesCount].numberOfInstallments}">
                         </div>
                         <div class="form-group">
                             <label for="allowedCreditCards${rulesCount}">Allowed Credit Card Types</label>
