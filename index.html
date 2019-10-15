@@ -56,9 +56,9 @@
         {id: "bijcard", name: "de Bijenkorf Card"},
         {id: "cabal", name: "Cabal"},
         {id: "cartebancaire", name: "Carte Bancaires"},
-        {id: "codensa", name: "	Codensa"},
-        {id: "cup", name: "	China Union Pay"},
-        {id: "dankort", name: "	Dankort"},
+        {id: "codensa", name: "Codensa"},
+        {id: "cup", name: "China Union Pay"},
+        {id: "dankort", name: "Dankort"},
         {id: "diners", name: "Diners Club"},
         {id: "discover", name: "Discover"},
         {id: "elo", name: "ELO"},
@@ -83,7 +83,7 @@
         {id: "visaalphabankbonus", name: "Alpha Bank Visa Bonus"},
         {id: "visadankort", name: "Visa Dankort"},
         {id: "warehouse", name: "Warehouse GiftCard"},
-    ]
+    ].sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1)
     const outputField = document.getElementById("outputString");
 
     function copyText() {
