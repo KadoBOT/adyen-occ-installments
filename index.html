@@ -24,8 +24,11 @@
             </div>
             <input type="text" class="form-control" id="outputString" aria-describedby="outputPrepend"
                    oninput="handleOutputChange(this.value)">
+            <div class="input-group-append">
+                <span class="input-group-text" id="charsCount">0/1000</span>
+            </div>
             <div class="invalid-feedback">
-                Please provide a valid value.
+
             </div>
         </div>
         <small id="outputHelp" class="form-text text-muted">Copy this text into the installments field</small>
@@ -50,41 +53,42 @@
     let rulesCount = 0;
     let result = {};
     const creditCards = [
-        {id: "amex", name: "Amex"},
-        {id: "argencard", name: "Argencard"},
-        {id: "bcmc", name: "Bancontact/Mister Cash"},
-        {id: "bijcard", name: "de Bijenkorf Card"},
-        {id: "cabal", name: "Cabal"},
-        {id: "cartebancaire", name: "Carte Bancaires"},
-        {id: "codensa", name: "Codensa"},
-        {id: "cup", name: "China Union Pay"},
-        {id: "dankort", name: "Dankort"},
-        {id: "diners", name: "Diners Club"},
-        {id: "discover", name: "Discover"},
-        {id: "elo", name: "ELO"},
-        {id: "forbrugsforeningen", name: "Forbrugsforeningen"},
-        {id: "hiper", name: "HiperCard"},
-        {id: "hipercard", name: "HiperCard"},
-        {id: "jcb", name: "JCB"},
-        {id: "karenmillen", name: "Karen Millen GiftCard"},
-        {id: "laser", name: "Laser"},
-        {id: "maestro", name: "Maestro"},
-        {id: "maestrouk", name: "Maestro UK"},
-        {id: "mc", name: "Mastercard"},
-        {id: "mcalphabankbonus", name: "Alpha Bank Mastercard Bonus"},
-        {id: "mir", name: "MIR"},
-        {id: "naranja", name: "Naranja"},
-        {id: "oasis", name: "Oasis GiftCard"},
-        {id: "shopping", name: "Tarjeta Shopping"},
-        {id: "solo", name: "Solo"},
-        {id: "troy", name: "Troy"},
-        {id: "uatp", name: "UATP"},
-        {id: "visa", name: "Visa"},
-        {id: "visaalphabankbonus", name: "Alpha Bank Visa Bonus"},
-        {id: "visadankort", name: "Visa Dankort"},
-        {id: "warehouse", name: "Warehouse GiftCard"},
+        {id: 1, name: "Amex"},
+        // {id: "argencard", name: "Argencard"},
+        // {id: "bcmc", name: "Bancontact/Mister Cash"},
+        // {id: "bijcard", name: "de Bijenkorf Card"},
+        // {id: "cabal", name: "Cabal"},
+        // {id: "cartebancaire", name: "Carte Bancaires"},
+        // {id: "codensa", name: "Codensa"},
+        // {id: "cup", name: "China Union Pay"},
+        // {id: "dankort", name: "Dankort"},
+        // {id: "diners", name: "Diners Club"},
+        // {id: "discover", name: "Discover"},
+        {id: 2, name: "ELO"},
+        // {id: "forbrugsforeningen", name: "Forbrugsforeningen"},
+        {id: 4, name: "HiperCard"},
+        // {id: "hipercard", name: "HiperCard"},
+        // {id: "jcb", name: "JCB"},
+        // {id: "karenmillen", name: "Karen Millen GiftCard"},
+        // {id: "laser", name: "Laser"},
+        // {id: "maestro", name: "Maestro"},
+        // {id: "maestrouk", name: "Maestro UK"},
+        {id: 8, name: "Mastercard"},
+        // {id: "mcalphabankbonus", name: "Alpha Bank Mastercard Bonus"},
+        // {id: "mir", name: "MIR"},
+        // {id: "naranja", name: "Naranja"},
+        // {id: "oasis", name: "Oasis GiftCard"},
+        // {id: "shopping", name: "Tarjeta Shopping"},
+        // {id: "solo", name: "Solo"},
+        // {id: "troy", name: "Troy"},
+        // {id: "uatp", name: "UATP"},
+        {id: 16, name: "Visa"},
+        // {id: "visaalphabankbonus", name: "Alpha Bank Visa Bonus"},
+        // {id: "visadankort", name: "Visa Dankort"},
+        // {id: "warehouse", name: "Warehouse GiftCard"},
     ].sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1)
     const outputField = document.getElementById("outputString");
+    const outputAppend = document.getElementById('charsCount')
 
     function copyText() {
         $('#toaster').toast('show')
@@ -94,25 +98,43 @@
         document.execCommand('copy')
     }
 
-    function toggleOutput(isValid) {
+    function toggleOutput(isValid, msg) {
+        const errMsg = msg || "Please provide a valid value."
+        document.querySelector('.invalid-feedback').textContent = errMsg;
         outputField.classList.toggle("is-invalid", !isValid)
         outputField.classList.toggle("is-valid", isValid)
     }
 
     function updateHash() {
-        const code = btoa(JSON.stringify(result, null, 2))
-        document.getElementById("outputString").value = code;
+        const code = JSON.stringify(Object.values(result))
+        outputAppend.innerText = `${code.length}/1000`
+        if (code.length > 1000) {
+            toggleOutput(false, "Too many rules. Please delete some")
+        }
+        const el = document.getElementById("outputString")
+        el.value = code;
     }
 
-    function handleOnChange(field, id, value) {
+    function handleOnChange(index, id, value) {
         toggleOutput(true)
-        if (field === 'numberOfInstallments') document.getElementById(`installmentsVal${id}`).innerText = value
-        result[id][field] = value;
+        if (index === 1) document.getElementById(`installmentsVal${id}`).innerText = value
+        result[id][index] = parseInt(value);
         updateHash()
     }
 
+    function handleSelect(id, value) {
+        const sum = value.reduce((acc, num) => parseInt(acc) + parseInt(num))
+        result[id][2] = parseInt(sum)
+        updateHash()
+    }
+
+    function isAllowedCreditCard(ruleId, value) {
+        const index = parseInt(value) & result[ruleId][2]
+        return index !== 0
+    }
+
     function duplicateRule(id) {
-        result[rulesCount + 1] = { ...result[id] }
+        result[rulesCount + 1] = [...result[id]]
         updateHash()
         addRule()
     }
@@ -126,9 +148,10 @@
 
     function handleOutputChange(value) {
         try {
-            const json = JSON.parse(atob(value));
+            const json = JSON.parse(value);
+            outputAppend.innerText = `${value.length}/1000`
             setCounter(0)
-            result = json;
+            result = json.reduce((acc, item, idx) => ({...acc, [idx + 1]: item }),{});
             document.getElementById("rulesRow").innerHTML = ""
             Object.keys(result).forEach(addRule)
             toggleOutput(true)
@@ -146,7 +169,7 @@
         setCounter(rulesCount + 1);
         const hasRules = rulesCount in result;
         if (!hasRules) {
-            result[rulesCount] = {amountRange: "", numberOfInstallments: 1, allowedCreditCards: []}
+            result[rulesCount] = ["", 1, 0]
         }
         const el = document.createElement('div')
         el.setAttribute("id", `rule${rulesCount}`)
@@ -157,17 +180,17 @@
                     <form>
                         <div class="form-group">
                             <label for="amountRange${rulesCount}">Amount Range</label>
-                            <input type="number" class="form-control" id="amountRange${rulesCount}" aria-describedby="amountRange" placeholder="Enter Amount" oninput="handleOnChange('amountRange', ${rulesCount}, this.value)" value="${result[rulesCount].amountRange}">
+                            <input type="number" class="form-control" id="amountRange${rulesCount}" aria-describedby="amountRange" placeholder="Enter Amount" oninput="handleOnChange(0, ${rulesCount}, this.value)" value="${result[rulesCount][0]}">
                         </div>
                         <div class="form-group">
-                            <label for="numberOfInstallments${rulesCount}">Number of Installments: <span  id="installmentsVal${rulesCount}">${result[rulesCount].numberOfInstallments}</span></label>
-                            <input type="range" class="custom-range" min="1" max="72" id="numberOfInstallments${rulesCount}" step="1" onchange="handleOnChange('numberOfInstallments', ${rulesCount}, this.value)" value="${result[rulesCount].numberOfInstallments}">
+                            <label for="numberOfInstallments${rulesCount}">Number of Installments: <span  id="installmentsVal${rulesCount}">${result[rulesCount][1]}</span></label>
+                            <input type="range" class="custom-range" min="1" max="72" id="numberOfInstallments${rulesCount}" step="1" onchange="handleOnChange(1, ${rulesCount}, this.value)" value="${result[rulesCount][1]}">
                         </div>
                         <div class="form-group">
                             <label for="allowedCreditCards${rulesCount}">Allowed Credit Card Types</label>
-                            <select multiple class="form-control" id="allowedCreditCards${rulesCount}" onchange="handleOnChange('allowedCreditCards', ${rulesCount}, Array.from(this.selectedOptions).map(option => option.value))">
+                            <select multiple class="form-control" id="allowedCreditCards${rulesCount}" onchange="handleSelect(${rulesCount}, Array.from(this.selectedOptions).map(option => option.value))">
                                 ${creditCards.map(({ id, name }) => {
-                                    if (result[rulesCount].allowedCreditCards.includes(id)) return `<option selected value="${id}">${name}</option>`
+                                    if (isAllowedCreditCard(rulesCount, id)) return `<option selected value="${id}">${name}</option>`
                                     return `<option value="${id}">${name}</option>`
                                 })}
                             </select>
