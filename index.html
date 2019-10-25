@@ -89,88 +89,102 @@
         // {id: "visaalphabankbonus", name: "Alpha Bank Visa Bonus"},
         // {id: "visadankort", name: "Visa Dankort"},
         // {id: "warehouse", name: "Warehouse GiftCard"},
-    ].sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1)
+    ].sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
     const outputField = document.getElementById("outputString");
-    const outputAppend = document.getElementById('charsCount')
-    const sums = {}
+    const outputAppend = document.getElementById('charsCount');
+    const sums = {};
 
     function copyText() {
-        $('#toaster').toast('show')
+        $('#toaster').toast('show');
 
-        const input = document.getElementById("outputString")
+        const input = document.getElementById("outputString");
         input.select();
         document.execCommand('copy')
+        document.getSelection().removeAllRanges();
     }
 
     function toggleOutput(isValid, msg) {
-        const errMsg = msg || "Please provide a valid value."
+        const errMsg = msg || "Please provide a valid value.";
         document.getElementById('outputFeedback').textContent = errMsg;
-        outputField.classList.toggle("is-invalid", !isValid)
+        outputField.classList.toggle("is-invalid", !isValid);
         outputField.classList.toggle("is-valid", isValid)
     }
 
     function validateField(value, id) {
-        const isValid = !!value
-        const el = document.getElementById(id)
-        el.classList.toggle("is-invalid", !isValid)
+        const isValid = !!value;
+        const el = document.getElementById(id);
+        el.classList.toggle("is-invalid", !isValid);
         el.classList.toggle("is-valid", isValid)
     }
 
     function updateHash() {
-        const code = JSON.stringify(Object.values(result))
-        outputAppend.innerText = `${code.length}/1000`
+        const code = JSON.stringify(Object.values(result));
+        outputAppend.innerText = `${code.length}/1000`;
         if (code.length > 1000) {
             toggleOutput(false, "Too many rules. Please delete some")
         }
-        const el = document.getElementById("outputString")
+        const el = document.getElementById("outputString");
         el.value = code;
     }
 
     function handleOnChange(index, id, value) {
-        toggleOutput(true)
+        toggleOutput(true);
         result[id][index] = parseInt(value);
         updateHash()
     }
 
     function handleSelect(id, value) {
-        const hasId = id in sums
+        const hasId = id in sums;
         if (!hasId) { sums[id] = [] }
 
-        const hasValue = sums[id].includes(value)
-        sums[id] = hasValue ? sums[id].filter(v => v !== value) : [...sums[id], value]
-        const sum = sums[id].reduce((acc, num) => parseInt(acc) + parseInt(num))
+        const parsedValue = parseInt(value)
+        const hasValue = sums[id].includes(parsedValue);
+        sums[id] = hasValue ? sums[id].filter(v => v !== parsedValue) : [...sums[id], parsedValue];
+        const sum = sums[id].reduce((acc, num) => parseInt(acc) + parseInt(num));
 
-        result[id][2] = parseInt(sum)
+        result[id][2] = parseInt(sum);
         updateHash()
     }
 
     function isAllowedCreditCard(ruleId, value) {
-        const index = parseInt(value) & result[ruleId][2]
+        const index = parseInt(value) & result[ruleId][2];
         return index !== 0
     }
 
     function duplicateRule(id) {
-        result[rulesCount + 1] = [...result[id]]
-        sums[rulesCount + 1] = [...sums[id]]
-        updateHash()
+        result[rulesCount + 1] = [...result[id]];
+        sums[rulesCount + 1] = [...sums[id]];
+        updateHash();
         addRule()
     }
 
     function removeRule(id) {
         document.getElementById(`rule${id}`).remove();
-        delete result[id]
-        setCounter(rulesCount - 1)
+        delete result[id];
+        setCounter(rulesCount - 1);
         updateHash()
+    }
+
+    function setCreditCards() {
+        Object.entries(result).forEach(([resultId, val]) => {
+            sums[resultId] = [];
+            creditCards.forEach(({ id }) => {
+                console.log(id, val[2], parseInt(id) & val[2])
+                if ((parseInt(id) & val[2]) !== 0) sums[resultId] = [...sums[resultId], parseInt(id)]
+            });
+            addRule(resultId)
+        });
     }
 
     function handleOutputChange(value) {
         try {
             const json = JSON.parse(value);
-            outputAppend.innerText = `${value.length}/1000`
-            setCounter(0)
+            outputAppend.innerText = `${value.length}/1000`;
+            setCounter(0);
             result = json.reduce((acc, item, idx) => ({...acc, [idx + 1]: item }),{});
-            document.getElementById("rulesRow").innerHTML = ""
-            Object.keys(result).forEach(addRule)
+            document.getElementById("rulesRow").innerHTML = "";
+
+            setCreditCards()
             toggleOutput(true)
         } catch (e) {
             toggleOutput(false)
@@ -188,9 +202,9 @@
         if (!hasRules) {
             result[rulesCount] = [0, 1, 0]
         }
-        const el = document.createElement('div')
-        el.setAttribute("id", `rule${rulesCount}`)
-        el.setAttribute("class", "col-lg-4 col-md-6 col-sm-6 mb-2")
+        const el = document.createElement('div');
+        el.setAttribute("id", `rule${rulesCount}`);
+        el.setAttribute("class", "col-lg-4 col-md-6 col-sm-6 mb-2");
         el.innerHTML = `
             <div class="card shadow-sm" aria-labelledby="headingOne">
                 <div class="card-body bg-light">
@@ -225,7 +239,7 @@
                     </form>
                 </div>
             </div>
-        `
+        `;
         document.getElementById("rulesRow").appendChild(el)
     }
 
