@@ -169,7 +169,6 @@
         Object.entries(result).forEach(([resultId, val]) => {
             sums[resultId] = [];
             creditCards.forEach(({ id }) => {
-                console.log(id, val[2], parseInt(id) & val[2])
                 if ((parseInt(id) & val[2]) !== 0) sums[resultId] = [...sums[resultId], parseInt(id)]
             });
             addRule(resultId)
