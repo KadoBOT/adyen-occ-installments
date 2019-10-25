@@ -27,9 +27,7 @@
             <div class="input-group-append">
                 <span class="input-group-text" id="charsCount">0/1000</span>
             </div>
-            <div class="invalid-feedback">
-
-            </div>
+            <div id="outputFeedback" class="invalid-feedback"></div>
         </div>
         <small id="outputHelp" class="form-text text-muted">Copy this text into the installments field</small>
     </div>
@@ -100,9 +98,16 @@
 
     function toggleOutput(isValid, msg) {
         const errMsg = msg || "Please provide a valid value."
-        document.querySelector('.invalid-feedback').textContent = errMsg;
+        document.getElementById('outputFeedback').textContent = errMsg;
         outputField.classList.toggle("is-invalid", !isValid)
         outputField.classList.toggle("is-valid", isValid)
+    }
+
+    function validateField(value, id) {
+        const isValid = !!value
+        const el = document.getElementById(id)
+        el.classList.toggle("is-invalid", !isValid)
+        el.classList.toggle("is-valid", isValid)
     }
 
     function updateHash() {
@@ -117,7 +122,6 @@
 
     function handleOnChange(index, id, value) {
         toggleOutput(true)
-        if (index === 1) document.getElementById(`installmentsVal${id}`).innerText = value
         result[id][index] = parseInt(value);
         updateHash()
     }
@@ -169,7 +173,7 @@
         setCounter(rulesCount + 1);
         const hasRules = rulesCount in result;
         if (!hasRules) {
-            result[rulesCount] = ["", 1, 0]
+            result[rulesCount] = [0, 1, 0]
         }
         const el = document.createElement('div')
         el.setAttribute("id", `rule${rulesCount}`)
@@ -179,12 +183,13 @@
                 <div class="card-body bg-light">
                     <form>
                         <div class="form-group">
-                            <label for="amountRange${rulesCount}">Amount Range</label>
-                            <input type="number" class="form-control" id="amountRange${rulesCount}" aria-describedby="amountRange" placeholder="Enter Amount" oninput="handleOnChange(0, ${rulesCount}, this.value)" value="${result[rulesCount][0]}">
+                            <label for="amountRange${rulesCount}">Minimum Amount</label>
+                            <input onblur="validateField(this.value, this.id)" min="0" type="number" class="form-control" id="amountRange${rulesCount}" aria-describedby="amountRange" placeholder="Enter Amount" oninput="handleOnChange(0, ${rulesCount}, this.value)" value="${result[rulesCount][0]}">
+                            <div class="invalid-feedback"></div>
                         </div>
                         <div class="form-group">
-                            <label for="numberOfInstallments${rulesCount}">Number of Installments: <span  id="installmentsVal${rulesCount}">${result[rulesCount][1]}</span></label>
-                            <input type="range" class="custom-range" min="1" max="72" id="numberOfInstallments${rulesCount}" step="1" onchange="handleOnChange(1, ${rulesCount}, this.value)" value="${result[rulesCount][1]}">
+                            <label for="numberOfInstallments${rulesCount}">Number of Installments</label>
+                            <input  onblur="validateField(this.value, this.id)"  min="1" type="number" class="form-control" id="numberOfInstallments${rulesCount}" aria-describedby="numberOfInstallments" placeholder="Enter Number of Installments" oninput="handleOnChange(1, ${rulesCount}, this.value)" value="${result[rulesCount][1]}">
                         </div>
                         <div class="form-group">
                             <label for="allowedCreditCards${rulesCount}">Allowed Credit Card Types</label>
