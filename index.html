@@ -16,7 +16,7 @@
             crossorigin="anonymous"></script>
 </head>
 <body>
-<div class="mx-auto container border m-2 p-2 bg-light fixed-top shadow-sm">
+<div class="mx-auto container border m-2 p-2 bg-light sticky-top shadow-sm">
     <div class="mt-2 mb-2">
         <div class="input-group">
             <div class="input-group-prepend">
@@ -29,7 +29,12 @@
             </div>
             <div id="outputFeedback" class="invalid-feedback"></div>
         </div>
-        <small id="outputHelp" class="form-text text-muted">Copy this text into the installments field</small>
+    </div>
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <strong>Hey there!</strong> Soon as you finish your changes, press the <strong>Copy</strong> button above to copy the text and paste it into Oracle Commerce Cloud
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
     </div>
 </div>
 <div role="alert" aria-live="assertive" aria-atomic="true" class="toast" id="toaster" data-autohide="true"
@@ -38,7 +43,7 @@
         Copied to clipboard!
     </div>
 </div>
-<div id="rules-wrapper" style="margin-top: 115px;">
+<div id="rules-wrapper">
     <div id="rules" class="overflow-auto mx-auto container border shadow-sm m-2 p-2">
         <div class="d-flex p-2 bd-highlight justify-content-between">
             <h2>Rules</h2>
