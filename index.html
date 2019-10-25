@@ -87,6 +87,7 @@
     ].sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1)
     const outputField = document.getElementById("outputString");
     const outputAppend = document.getElementById('charsCount')
+    const sums = {}
 
     function copyText() {
         $('#toaster').toast('show')
@@ -127,7 +128,13 @@
     }
 
     function handleSelect(id, value) {
-        const sum = value.reduce((acc, num) => parseInt(acc) + parseInt(num))
+        const hasId = id in sums
+        if (!hasId) { sums[id] = [] }
+
+        const hasValue = sums[id].includes(value)
+        sums[id] = hasValue ? sums[id].filter(v => v !== value) : [...sums[id], value]
+        const sum = sums[id].reduce((acc, num) => parseInt(acc) + parseInt(num))
+
         result[id][2] = parseInt(sum)
         updateHash()
     }
@@ -139,6 +146,7 @@
 
     function duplicateRule(id) {
         result[rulesCount + 1] = [...result[id]]
+        sums[rulesCount + 1] = [...sums[id]]
         updateHash()
         addRule()
     }
@@ -177,7 +185,7 @@
         }
         const el = document.createElement('div')
         el.setAttribute("id", `rule${rulesCount}`)
-        el.setAttribute("class", "col-3 mb-2")
+        el.setAttribute("class", "col-lg-4 col-md-6 col-sm-6 mb-2")
         el.innerHTML = `
             <div class="card shadow-sm" aria-labelledby="headingOne">
                 <div class="card-body bg-light">
@@ -193,12 +201,19 @@
                         </div>
                         <div class="form-group">
                             <label for="allowedCreditCards${rulesCount}">Allowed Credit Card Types</label>
-                            <select multiple class="form-control" id="allowedCreditCards${rulesCount}" onchange="handleSelect(${rulesCount}, Array.from(this.selectedOptions).map(option => option.value))">
-                                ${creditCards.map(({ id, name }) => {
-                                    if (isAllowedCreditCard(rulesCount, id)) return `<option selected value="${id}">${name}</option>`
-                                    return `<option value="${id}">${name}</option>`
-                                })}
-                            </select>
+                            ${creditCards.map(({ id, name }) => {
+                                if (isAllowedCreditCard(rulesCount, id)) {
+                                    return `<div id="allowedCreditCards${rulesCount}" class="custom-control custom-switch">
+                                        <input checked type="checkbox" class="custom-control-input" value="${id}" onchange="handleSelect(${rulesCount}, this.value)" id="switch-${rulesCount}-${id}">
+                                        <label class="custom-control-label" for="switch-${rulesCount}-${id}">${name}</label>
+                                    </div>`
+                                }
+
+                                return `<div id="allowedCreditCards${rulesCount}"  class="custom-control custom-switch">
+                                  <input type="checkbox" class="custom-control-input" value="${id}" onchange="handleSelect(${rulesCount}, this.value)" id="switch-${rulesCount}-${id}">
+                                  <label class="custom-control-label" for="switch-${rulesCount}-${id}">${name}</label>
+                                </div>`
+                            }).join("")}
                         </div>
                         <button type="button" class="btn btn-primary btn-block" id="duplicateRule${rulesCount}" onclick="duplicateRule(${rulesCount})">Duplicate Rule</button>
                         <button type="button" class="btn btn-outline-danger btn-block" id="deleteRule${rulesCount}" onclick="removeRule(${rulesCount})">Delete Rule</button>
