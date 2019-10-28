@@ -14,6 +14,23 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
             integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
             crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css"
+          integrity="sha256-+N4/V/SbAFiW1MPBCXnfnP9QSN3+Keu+NlB+0ev/YKQ=" crossorigin="anonymous"/>
+    <style>
+        .fas {
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+
+        .fas:hover {
+            color: #a0a0a0;
+        }
+
+        .dropdown {
+            top: 5px;
+            right: 5px;
+        }
+    </style>
 </head>
 <body>
 <div class="mx-auto container border m-2 p-2 bg-light sticky-top shadow-sm">
@@ -31,7 +48,7 @@
         </div>
     </div>
     <div class="alert alert-info alert-dismissible fade show" role="alert">
-        <strong>Hey there!</strong> Soon as you finish your changes, press the <strong>Copy</strong> button above to copy the text and paste it into Oracle Commerce Cloud
+        <strong>Tip:</strong> When you finish your changes, press the <strong>Copy</strong> button above to copy the text. Paste it into your Oracle Commerce Cloud settings.
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
@@ -140,7 +157,7 @@
         const parsedValue = parseInt(value)
         const hasValue = sums[id].includes(parsedValue);
         sums[id] = hasValue ? sums[id].filter(v => v !== parsedValue) : [...sums[id], parsedValue];
-        const sum = sums[id].reduce((acc, num) => parseInt(acc) + parseInt(num));
+        const sum = sums[id].reduce((acc, num) => parseInt(acc) + parseInt(num), 0);
 
         result[id][2] = parseInt(sum);
         updateHash()
@@ -154,15 +171,14 @@
     function duplicateRule(id) {
         result[rulesCount + 1] = [...result[id]];
         sums[rulesCount + 1] = [...sums[id]];
-        updateHash();
         addRule()
     }
 
     function removeRule(id) {
         document.getElementById(`rule${id}`).remove();
         delete result[id];
-        setCounter(rulesCount - 1);
         updateHash()
+        setCounter(document.getElementById('counter').innerText - 1);
     }
 
     function setCreditCards() {
@@ -200,6 +216,7 @@
         const hasRules = rulesCount in result;
         if (!hasRules) {
             result[rulesCount] = [0, 1, 0]
+            sums[rulesCount] = []
         }
         const el = document.createElement('div');
         el.setAttribute("id", `rule${rulesCount}`);
@@ -207,6 +224,21 @@
         el.innerHTML = `
             <div class="card shadow-sm" aria-labelledby="headingOne">
                 <div class="card-body bg-light">
+                    <div class="dropdown position-absolute">
+                      <a class="btn btn-link" role="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </a>
+                      <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu2">
+                        <button class="dropdown-item" type="button" onclick="duplicateRule(${rulesCount})">
+                            <i aria-label="Duplicate rule" role="button" class="far fa-clone" title="Duplicate rule"></i>
+                            <span class="col-8">Duplicate</span>
+                        </button>
+                        <button class="dropdown-item" type="button" onclick="removeRule(${rulesCount})">
+                            <i aria-label="Delete rule" role="button" class="far fa-trash-alt" title="Delete rule"></i>
+                            <span class="col-8">Delete</span>
+                        </button>
+                      </div>
+                    </div>
                     <form>
                         <div class="form-group">
                             <label for="amountRange${rulesCount}">Minimum Amount</label>
@@ -233,13 +265,12 @@
                                 </div>`
                             }).join("")}
                         </div>
-                        <button type="button" class="btn btn-primary btn-block" id="duplicateRule${rulesCount}" onclick="duplicateRule(${rulesCount})">Duplicate Rule</button>
-                        <button type="button" class="btn btn-outline-danger btn-block" id="deleteRule${rulesCount}" onclick="removeRule(${rulesCount})">Delete Rule</button>
                     </form>
                 </div>
             </div>
         `;
         document.getElementById("rulesRow").appendChild(el)
+        updateHash()
     }
 
     document.getElementById("addRule").addEventListener('click', addRule)
